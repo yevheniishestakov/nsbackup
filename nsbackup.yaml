@@ -1,0 +1,81 @@
+---
+- name: Netscaler backup
+  hosts: all
+  vars:
+    backup_count:
+    oldest_backup_filename:
+    date:
+    backup_name:
+  gather_facts: false
+  remote_user: nsbackup
+
+  tasks:
+
+   - name: Get count of backups
+     delegate_to: localhost
+     uri:
+       url: https://{{ inventory_hostname }}/nitro/v1/config/systembackup?view=summary
+       user: nsbackup
+       password: nsbackup
+       method: GET
+       status_code: 200
+       force_basic_auth: yes
+     register: response
+
+   - name: Set backup_count
+     set_fact:
+      backup_count: "{{ response.json.systembackup | length}}"
+     
+   - name: Set oldest_backup_filename
+     set_fact:
+      oldest_backup_filename: "{{ response.json.systembackup[0].filename }}"
+
+   - name:
+     set_fact:
+      date: "{{lookup('pipe','date +%Y_%m_%d_%H:%M')}}"
+
+   - name:
+     set_fact:
+        backup_name: "{{ inventory_hostname }}_{{ date }}"
+
+   - debug:
+       msg: "backup count is {{ backup_count }}"
+
+   
+   - name: Delete oldest backup
+     delegate_to: localhost
+     uri:
+       url: https://{{ inventory_hostname }}/nitro/v1/config/systembackup/{{ oldest_backup_filename }}
+       user: nsbackup
+       password: nsbackup
+       method: DELETE
+       status_code: 200
+       force_basic_auth: yes
+     when: backup_count == '50'
+
+
+   - name: Create backup
+     delegate_to: localhost
+     uri:
+       url: https://{{ inventory_hostname }}/nitro/v1/config/systembackup?action=create
+       user: nsbackup
+       password: nsbackup
+       method: POST
+       body:
+         systembackup:
+           filename: "{{ backup_name }}"
+           level: "full"
+       body_format: json
+       status_code: 200
+       force_basic_auth: yes
+     register: backup_created
+
+
+   - name: Download backup
+     delegate_to: localhost
+     command:
+       cmd: scp -i auth_key_citrix.ppk nsbackup@{{ inventory_hostname }}:/var/ns_sys_backup/{{ backup_name }}.tgz .
+       creates: "{{ backup_name }}.tgz"
+       
+
+       

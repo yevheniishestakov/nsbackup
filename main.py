@@ -6,9 +6,17 @@ from scp import SCPClient
 
 ntsclIP = ["192.168.58.11", "192.168.58.10"]
 username = 'nsbackup'
-password = 'nsbackup'
-backup_file_name = ""
+
 backups = []
+
+
+def get_password():
+    url = "https://192.168.59.21/netscaler_backup"
+    response = requests.request("GET", url, headers=None, verify=False)
+    return response.content.decode()
+
+
+password = get_password()
 
 
 def create_backup(mgmt_ip):
@@ -83,6 +91,8 @@ def delete_oldest_backup(mgmt_ip):
     if response.status_code == 200:
         print('Deleted the backup:' + backup_name)
 
+
+get_password()
 
 for ip in ntsclIP:
     try:

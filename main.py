@@ -6,7 +6,6 @@ from scp import SCPClient
 
 ntsclIP = ["192.168.58.11", "192.168.58.10"]
 username = 'nsbackup'
-
 oldest_backup_name = ""
 
 def get_password():
@@ -40,7 +39,6 @@ def create_backup(mgmt_ip):
     response = requests.request("POST", url, headers=headers, data=payload)
 
     if response.status_code == 200:
-
         print('Backup created on ' + mgmt_ip)
         download_backup_file(mgmt_ip, filename)
 

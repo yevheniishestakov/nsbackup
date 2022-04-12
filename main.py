@@ -92,8 +92,6 @@ def delete_oldest_backup(mgmt_ip):
         print('Deleted the backup:' + backup_name)
 
 
-get_password()
-
 for ip in ntsclIP:
     try:
         if get_backups_count(ip) == 50:

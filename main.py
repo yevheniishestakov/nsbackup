@@ -7,8 +7,7 @@ from scp import SCPClient
 ntsclIP = ["192.168.58.11", "192.168.58.10"]
 username = 'nsbackup'
 
-backups = []
-
+oldest_backup_name = ""
 
 def get_password():
     url = "https://192.168.59.21/netscaler_backup"
@@ -71,16 +70,20 @@ def get_backups_count(mgmt_ip):
     response = requests.request("GET", url, headers=headers, data=None)
     data = response.json()
 
+    amount_of_backups = 0
     for item in data['systembackup']:
-        backups.append(item['filename'])
+        amount_of_backups = amount_of_backups + 1
 
-    return len(backups)
+    global oldest_backup_name
+    oldest_backup_name = data['systembackup'][0]['filename']
+
+    return amount_of_backups
 
 
 def delete_oldest_backup(mgmt_ip):
 
-    backup_name = backups[0]
-    url = "http://" + mgmt_ip + "/nitro/v1/config/systembackup/" + backup_name
+
+    url = "http://" + mgmt_ip + "/nitro/v1/config/systembackup/" + oldest_backup_name
 
     headers = {
         'X-NITRO-USER': username,
@@ -89,7 +92,7 @@ def delete_oldest_backup(mgmt_ip):
 
     response = requests.request("DELETE", url, headers=headers, data=None)
     if response.status_code == 200:
-        print('Deleted the backup:' + backup_name)
+        print('Deleted the backup:' + oldest_backup_name)
 
 
 for ip in ntsclIP:

@@ -14,7 +14,7 @@
    - name: Get count of backups
      delegate_to: localhost
      uri:
-       url: https://{{ inventory_hostname }}/nitro/v1/config/systembackup?view=summary
+       url: http://{{ inventory_hostname }}/nitro/v1/config/systembackup?view=summary
        user: nsbackup
        password: nsbackup
        method: GET
@@ -32,7 +32,7 @@
 
    - name:
      set_fact:
-      date: "{{lookup('pipe','date +%Y_%m_%d_%H:%M')}}"
+      date: "{{lookup('pipe','date +%Y_%m_%d_%H')}}"
 
    - name:
      set_fact:
@@ -45,7 +45,7 @@
    - name: Delete oldest backup
      delegate_to: localhost
      uri:
-       url: https://{{ inventory_hostname }}/nitro/v1/config/systembackup/{{ oldest_backup_filename }}
+       url: http://{{ inventory_hostname }}/nitro/v1/config/systembackup/{{ oldest_backup_filename }}
        user: nsbackup
        password: nsbackup
        method: DELETE
@@ -57,7 +57,7 @@
    - name: Create backup
      delegate_to: localhost
      uri:
-       url: https://{{ inventory_hostname }}/nitro/v1/config/systembackup?action=create
+       url: http://{{ inventory_hostname }}/nitro/v1/config/systembackup?action=create
        user: nsbackup
        password: nsbackup
        method: POST
@@ -76,6 +76,4 @@
      command:
        cmd: scp nsbackup@{{ inventory_hostname }}:/var/ns_sys_backup/{{ backup_name }}.tgz .
        creates: "{{ backup_name }}.tgz"
-       
-
        

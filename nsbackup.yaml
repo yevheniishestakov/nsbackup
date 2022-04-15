@@ -74,7 +74,7 @@
    - name: Download backup
      delegate_to: localhost
      command:
-       cmd: scp -i auth_key_citrix.ppk nsbackup@{{ inventory_hostname }}:/var/ns_sys_backup/{{ backup_name }}.tgz .
+       cmd: scp nsbackup@{{ inventory_hostname }}:/var/ns_sys_backup/{{ backup_name }}.tgz .
        creates: "{{ backup_name }}.tgz"
        
 
